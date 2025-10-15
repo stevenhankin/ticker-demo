@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useFinnhubLive } from './useFinnhubLive';
 
-function App() {
-  const [count, setCount] = useState(0)
+const SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'TG'];
+
+export default function App() {
+  const { status, isLoading, isError, rows } = useFinnhubLive(SYMBOLS);
+
+  if (isLoading) {
+    return <div>Loading initial quotes…</div>;
+  }
+
+  if (isError) {
+    return <div>Failed to load seed.</div>;
+  }
 
   return (
-    <>
+    <div>
+      <h1>Ticker Demo</h1>
+      <h2>Finnhub Live Prices (Hybrid)</h2>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        Feed status: <b>{status}</b>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.symbol}>
+              <td>{r.symbol}</td>
+              <td>{r.price.toFixed(2)}</td>
+              <td>{new Date(r.ts).toLocaleTimeString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Seed via REST /quote; live via WebSocket trade stream. Batched per
+        animation frame.
       </p>
-    </>
-  )
+    </div>
+  );
 }
-
-export default App

@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+# Steve's Ticker Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time React + TypeScript demo showcasing **low-latency data streaming**, **React Query caching**, and a **reducer-based state architecture** designed for scalable financial front-ends.
 
-Currently, two official plugins are available:
+This project connects to the **Finnhub.io** WebSocket API to stream live equity trades (e.g. TG, AAPL, MSFT, NVDA) and demonstrates how to combine **server-side snapshots** with **push-based updates** for efficient, resilient UIs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+- [Steve's Ticker Demo](#steves-ticker-demo)
+  - [🚀 Features](#-features)
+  - [🧱 Architecture Overview](#-architecture-overview)
+  - [🧩 Quick Start](#-quick-start)
+    - [1️⃣ Clone \& install](#1️⃣-clone--install)
+    - [2️⃣ Add your Finnhub API key](#2️⃣-add-your-finnhub-api-key)
+    - [3️⃣ Run locally](#3️⃣-run-locally)
+  - [📡 How It Works](#-how-it-works)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🚀 Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Hybrid data model**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+  - Bootstrap via REST `/quote` (React Query snapshot)
+  - Merge real-time trades via WebSocket
+  - Keep React Query cache warm with live updates
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Pure reducer pattern**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+  - All state transitions are pure and testable
+  - Batch incoming trades per "animation frame" to prevent render storms
+
+- **Performance by design**
+
+  - Memoized selectors and virtualised rendering ready
+
+- **Resilience**
+
+  - UI remains responsive even if the socket drops — refreshes snapshot automatically on reconnect
+  - Server “ping” messages handled gracefully
+
+- **Technology stack**
+  - React 19 + TypeScript
+  - React Query v5 (`@tanstack/react-query`)
+  - Vite build environment
+  - WebSocket streaming (Finnhub API)
+
+---
+
+## 🧱 Architecture Overview
+
+Each trade tick is treated as an **action**, folded through the reducer to create a new immutable state snapshot.  
+React Query holds the cached state so other components remain hot without refetching.
+
+---
+
+## 🧩 Quick Start
+
+### 1️⃣ Clone & install
+
+```bash
+git clone https://github.com/stevenhankin/ticker-demo.git
+cd ticker-demo
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2️⃣ Add your Finnhub API key
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a .env.local file:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_FINNHUB_TOKEN=YOUR_TOKEN_HERE
 ```
+
+Get your free key from finnhub.io.
+
+### 3️⃣ Run locally
+
+```bash
+npm run dev
+```
+
+Then open http://localhost:5173
+
+---
+
+## 📡 How It Works
+
+Seed phase: React Query fetches a /quote snapshot for each configured symbol (e.g. AAPL, MSFT, NVDA, TG).
+
+Connect phase: A WebSocket connection opens (wss://ws.finnhub.io?token=…).
+
+Stream phase: Each "trade" message is batched (per animation frame) and dispatched to the reducer as an APPLY_BATCH action.
+
+Sync phase: The same updates are merged into the React Query cache, ensuring any other view using the same key remains warm.
+
+Render phase: The UI re-renders only once per batch, keeping 60 fps even under heavy tick flow.
