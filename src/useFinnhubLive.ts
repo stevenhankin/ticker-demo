@@ -6,11 +6,10 @@ import type {
   Book,
   FinnhubTradeMsg,
   FinnhubPingMsg,
-  FinnhubOtherMsg,
+  FinnhubOtherMsg
 } from './types';
 
-const token =
-  import.meta.env?.VITE_FINNHUB_TOKEN ?? process.env.REACT_APP_FINNHUB_TOKEN;
+const token = import.meta.env?.VITE_FINNHUB_TOKEN;
 
 const QUERY_KEY = ['book'];
 
@@ -22,12 +21,12 @@ export function useFinnhubLive(symbols: string[]) {
     data: seed,
     isLoading,
     isError,
-    refetch,
+    refetch
   } = useQuery({
     queryKey: ['seed', ...symbols],
     queryFn: () => fetchSeed(symbols),
     staleTime: 10_000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false
   });
 
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -89,7 +88,7 @@ export function useFinnhubLive(symbols: string[]) {
     ws.onmessage = (evt) => {
       const msg: FinnhubTradeMsg | FinnhubPingMsg | FinnhubOtherMsg =
         JSON.parse(evt.data);
-      if (msg.type === 'trade') {
+      if (isTradeMsg(msg)) {
         for (const t of msg.data) {
           queueRef.current.push({ symbol: t.s, price: t.p, ts: t.t });
         }
@@ -105,10 +104,13 @@ export function useFinnhubLive(symbols: string[]) {
       try {
         for (const s of symbols)
           ws.send(JSON.stringify({ type: 'unsubscribe', symbol: s }));
-      } catch {}
+      } catch (e) {
+        console.error('WebSocket not open', e);
+      }
       ws.close();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed, token, symbols, qc]);
 
   // 3) Memoized rows for rendering
@@ -126,6 +128,19 @@ export function useFinnhubLive(symbols: string[]) {
     isError,
     rows,
     lastTs: state.lastTs,
-    refetchSeed: refetch,
+    refetchSeed: refetch
   };
 }
+
+/**
+ * Type Guard for FinnhubTradeMsg
+ *
+ * See https://www.finnhub.io/docs/api/websocket-trades
+ */
+const isTradeMsg = (msg: unknown): msg is FinnhubTradeMsg =>
+  !!msg &&
+  typeof msg === 'object' &&
+  'type' in msg &&
+  'data' in msg &&
+  msg?.type === 'trade' &&
+  Array.isArray(msg?.data);
