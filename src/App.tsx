@@ -31,7 +31,11 @@ export default function App() {
         Feed status: <b>{status}</b>
       </Grid>
       <Grid size={{ xs: 12, lg: 6 }}>
-        <LiveTable rows={rows} handleSelectedSymbol={handleSelectedSymbol} />
+        <LiveTable
+          rows={rows}
+          symbol={selectedSymbol}
+          handleSelectedSymbol={handleSelectedSymbol}
+        />
       </Grid>
       <Grid size={{ xs: 12, lg: 6 }}>
         <LivePriceChart

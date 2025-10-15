@@ -9,7 +9,7 @@ const MAX_POINTS = 300; // ~5 minutes at ~1/sec
 type Point = [number, number]; // [tsMs, price]
 
 /**
- * Live chart for the first symbol
+ * Live chart for the selected symbol
  */
 export default function LivePriceChart({
   symbol = 'AAPL',
