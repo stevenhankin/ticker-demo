@@ -1,10 +1,7 @@
-const token =
-  import.meta.env?.VITE_FINNHUB_TOKEN ?? process.env.REACT_APP_FINNHUB_TOKEN;
+const token = import.meta.env?.VITE_FINNHUB_TOKEN;
 
 if (!token) {
-  console.warn(
-    'Finnhub token missing. Set VITE_FINNHUB_TOKEN or REACT_APP_FINNHUB_TOKEN'
-  );
+  console.warn('Finnhub token missing. Set VITE_FINNHUB_TOKEN in .env file.');
 }
 
 const base = 'https://finnhub.io/api/v1';
