@@ -1,9 +1,10 @@
+import LivePriceChart from './LivePriceChart';
 import { useFinnhubLive } from './useFinnhubLive';
 
 const SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'TG'];
 
 export default function App() {
-  const { status, isLoading, isError, rows } = useFinnhubLive(SYMBOLS);
+  const { status, isLoading, isError, rows, lastTs } = useFinnhubLive(SYMBOLS);
 
   if (isLoading) {
     return <div>Loading initial quotes…</div>;
@@ -20,6 +21,10 @@ export default function App() {
       <div>
         Feed status: <b>{status}</b>
       </div>
+
+      {/* Live chart for the first symbol */}
+      <LivePriceChart symbol={SYMBOLS[0]} liveFeed={{ status, rows, lastTs }} />
+
       <table>
         <thead>
           <tr>
@@ -38,6 +43,7 @@ export default function App() {
           ))}
         </tbody>
       </table>
+
       <p>
         Seed via REST /quote; live via WebSocket trade stream. Batched per
         animation frame.

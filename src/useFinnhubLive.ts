@@ -1,19 +1,46 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useQueryClient,
+  type QueryObserverResult,
+  type RefetchOptions
+} from '@tanstack/react-query';
 import { initialState, reducer } from './reducer';
 import { fetchSeed } from './api';
 import type {
   Book,
   FinnhubTradeMsg,
   FinnhubPingMsg,
-  FinnhubOtherMsg
+  FinnhubOtherMsg,
+  SymbolRow
 } from './types';
 
 const token = import.meta.env?.VITE_FINNHUB_TOKEN;
 
 const QUERY_KEY = ['book'];
 
-export function useFinnhubLive(symbols: string[]) {
+export type Feed = {
+  status: 'idle' | 'connecting' | 'open' | 'closed' | 'error';
+  isLoading: boolean;
+  isError: boolean;
+  rows: SymbolRow[];
+  lastTs: number;
+  refetchSeed: (options?: RefetchOptions) => Promise<
+    QueryObserverResult<
+      Record<
+        string,
+        {
+          symbol: string;
+          price: number;
+          ts: number;
+        }
+      >,
+      Error
+    >
+  >;
+};
+
+export function useFinnhubLive(symbols: string[]): Feed {
   const qc = useQueryClient();
 
   // 1) Get initial quotes (seed)

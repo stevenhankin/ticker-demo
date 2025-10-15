@@ -1,5 +1,7 @@
 # Steve's Ticker Demo
 
+**[Click HERE for Live Demo](https://stevenhankin.github.io/ticker-demo/)**
+
 A real-time React + TypeScript demo showcasing **low-latency data streaming**, **React Query caching**, and a **reducer-based state architecture** designed for scalable financial front-ends.
 
 This project connects to the **Finnhub.io** WebSocket API to stream live equity trades (e.g. TG, AAPL, MSFT, NVDA) and demonstrates how to combine **server-side snapshots** with **push-based updates** for efficient, resilient UIs.
