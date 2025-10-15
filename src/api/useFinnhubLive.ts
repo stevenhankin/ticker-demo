@@ -125,7 +125,11 @@ export function useFinnhubLive(symbols: string[]): Feed {
     };
 
     ws.onerror = () => dispatch({ type: 'CONNECTION', status: 'error' });
-    ws.onclose = () => dispatch({ type: 'CONNECTION', status: 'closed' });
+
+    ws.onclose = (e) => {
+      dispatch({ type: 'CONNECTION', status: 'closed' });
+      console.log('WS closed', e.code, e.reason);
+    };
 
     return () => {
       try {

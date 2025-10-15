@@ -1,5 +1,6 @@
-import LivePriceChart from './LivePriceChart';
-import { useFinnhubLive } from './useFinnhubLive';
+import LivePriceChart from './views/LivePriceChart';
+import { LiveTable } from './views/LiveTable';
+import { useFinnhubLive } from './api/useFinnhubLive';
 
 const SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'TG'];
 
@@ -22,27 +23,9 @@ export default function App() {
         Feed status: <b>{status}</b>
       </div>
 
-      {/* Live chart for the first symbol */}
       <LivePriceChart symbol={SYMBOLS[0]} liveFeed={{ status, rows, lastTs }} />
 
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Price</th>
-            <th>Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.symbol}>
-              <td>{r.symbol}</td>
-              <td>{r.price.toFixed(2)}</td>
-              <td>{new Date(r.ts).toLocaleTimeString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <LiveTable rows={rows} />
 
       <p>
         Seed via REST /quote; live via WebSocket trade stream. Batched per
