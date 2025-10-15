@@ -2,7 +2,9 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeQuartz,
-  type ColDef
+  type ColDef,
+  type GridReadyEvent,
+  type RowClickedEvent
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import type { SymbolRow } from '../api/types';
@@ -10,14 +12,19 @@ import type { SymbolRow } from '../api/types';
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+type Props = {
+  rows: SymbolRow[];
+  handleSelectedSymbol: (symbol: SymbolRow['symbol']) => void;
+};
+
 /**
  * AGGrid table for live symbol data
  *
  * See [AgGrid React](https://www.ag-grid.com/react-data-grid/getting-started/)
  */
-export const LiveTable = ({ rows }: { rows: SymbolRow[] }) => {
+export const LiveTable = ({ rows, handleSelectedSymbol }: Props) => {
   // Column Definitions: Defines the columns to be displayed.
-  const colDefs: ColDef[] = [
+  const colDefs: ColDef<SymbolRow>[] = [
     { field: 'symbol', headerName: 'Symbol' },
     {
       field: 'price',
@@ -31,19 +38,25 @@ export const LiveTable = ({ rows }: { rows: SymbolRow[] }) => {
     }
   ];
 
-  const handleGridReady = (params: any) => {
+  const handleGridReady = (params: GridReadyEvent<SymbolRow>) => {
     params.api.sizeColumnsToFit();
+  };
+
+  const handleClickedRow = (event: RowClickedEvent<SymbolRow>) => {
+    handleSelectedSymbol(event.data!.symbol);
   };
 
   return (
     <div style={{ height: 'auto', width: '100%' }} className='ag-theme-alpine'>
-      <AgGridReact
+      <AgGridReact<SymbolRow>
+        getRowId={(data) => data.data.symbol}
         rowData={rows}
         columnDefs={colDefs}
         domLayout='autoHeight'
         theme={themeQuartz}
         onGridReady={handleGridReady}
-        animateRows
+        animateRows={true}
+        onRowClicked={handleClickedRow}
       />
     </div>
   );

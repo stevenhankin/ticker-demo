@@ -20,20 +20,28 @@ export default function LivePriceChart({
 }) {
   const { rows, lastTs, status } = liveFeed;
   const [seriesData, setSeriesData] = useState<Point[]>([]);
+  const [prevSymbol, setPrevSymbol] = useState(symbol);
 
   // append a point whenever we get a new tick time
   useEffect(() => {
-    const r = rows.find((x) => x.symbol === symbol);
-    if (!r) return;
-    const updatedSeries = (prev: Point[]) => {
-      const next: Point[] = [...prev, [r.ts, r.price]];
-      return next.length > MAX_POINTS ? next.slice(-MAX_POINTS) : next;
-    };
-    setSeriesData(updatedSeries);
-  }, [lastTs, rows, symbol]);
+    if (prevSymbol !== symbol) {
+      // reset if symbol changed
+      setSeriesData([]);
+      setPrevSymbol(symbol);
+    } else {
+      // only track the selected symbol
+      const r = rows.find((x) => x.symbol === symbol);
+      if (!r) return;
+      const updatedSeries = (prev: Point[]) => {
+        const next: Point[] = [...prev, [r.ts, r.price]];
+        return next.length > MAX_POINTS ? next.slice(-MAX_POINTS) : next;
+      };
+      setSeriesData(updatedSeries);
+    }
+  }, [lastTs, prevSymbol, rows, symbol]);
 
   const options: Highcharts.Options = {
-    title: { text: `${symbol} – Live Price` },
+    title: { text: `${symbol} - Live Price` },
     xAxis: { type: 'datetime' },
     yAxis: { title: { text: 'Price' } },
     series: [
