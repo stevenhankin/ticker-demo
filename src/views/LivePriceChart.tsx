@@ -43,7 +43,10 @@ export default function LivePriceChart({
         data: seriesData,
         tooltip: { valueDecimals: 2 }
       }
-    ]
+    ],
+    accessibility: {
+      enabled: true
+    }
   };
 
   if (status !== 'open') {
@@ -55,7 +58,7 @@ export default function LivePriceChart({
   }
 
   return (
-    <div style={{ minHeight: 320 }}>
+    <div style={{ minHeight: 320, borderRadius: 8, overflow: 'hidden' }}>
       <HighchartsReact highcharts={Highcharts} options={options} />
     </div>
   );

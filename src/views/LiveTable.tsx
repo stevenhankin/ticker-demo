@@ -31,13 +31,19 @@ export const LiveTable = ({ rows }: { rows: SymbolRow[] }) => {
     }
   ];
 
+  const handleGridReady = (params: any) => {
+    params.api.sizeColumnsToFit();
+  };
+
   return (
-    <div style={{ height: 'auto' }}>
+    <div style={{ height: 'auto', width: '100%' }} className='ag-theme-alpine'>
       <AgGridReact
         rowData={rows}
         columnDefs={colDefs}
         domLayout='autoHeight'
         theme={themeQuartz}
+        onGridReady={handleGridReady}
+        animateRows
       />
     </div>
   );
